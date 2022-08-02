@@ -20,7 +20,7 @@ class APK(ProcessingModule):
             raise ModuleInitializationError(self, "Missing dependency: androguard")
 
     def each(self, target):
-        self.results = dict()
+        self.results = {}
 
         try:
             apk, vm, vm_analysis = AnalyzeAPK(target)
@@ -35,7 +35,10 @@ class APK(ProcessingModule):
 
             for cls in vm_analysis.get_classes():
                 cls = cls.get_vm_class()
-                if "L{};".format(self.results['main_activity'].replace('.', '/')).lower() in cls.get_name().lower():
+                if (
+                    f"L{self.results['main_activity'].replace('.', '/')};".lower()
+                    in cls.get_name().lower()
+                ):
                     self.results['main_activity_content'] = cls.get_source()
         except Exception:
             apk = None

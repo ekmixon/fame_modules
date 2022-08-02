@@ -98,7 +98,7 @@ class Joe(ProcessingModule):
     def each_with_type(self, target, file_type):
         self.joe = JoeSandbox(apikey=self.apikey, accept_tac=True)
         self.analysis_url = "https://jbxcloud.joesecurity.org/analysis/{}/0/html"
-        self.results = dict()
+        self.results = {}
         analysis = ""
         try:
             if file_type == 'url':
@@ -129,7 +129,7 @@ class Joe(ProcessingModule):
             # Get unpacked executables
             self.get_unpacked_executables()
         except (JoeException, Exception) as error:
-            self.log("debug", "{}".format(error))
+            self.log("debug", f"{error}")
 
         return True
 
@@ -164,7 +164,7 @@ class Joe(ProcessingModule):
                 data = self.joe.submission_info(self.submission_id)
                 status = data["status"]
             except JoeException as error:
-                raise ModuleExecutionError("Error while waiting for analysis:\n{}".format(error))
+                raise ModuleExecutionError(f"Error while waiting for analysis:\n{error}")
             if status == 'finished':
                 break
             time.sleep(self.wait_step)
@@ -177,7 +177,7 @@ class Joe(ProcessingModule):
             analysis_info = self.joe.analysis_info(self.webid)
             self.analysisid = analysis_info["analysisid"]
         except JoeException as error:
-            raise ModuleExecutionError("Error while getting analysis details:\n{}".format(error))
+            raise ModuleExecutionError(f"Error while getting analysis details:\n{error}")
 
 
     def process_report(self):
@@ -197,7 +197,9 @@ class Joe(ProcessingModule):
                 fd.write(data[1])
             self.add_support_file('Report', filepath)
         except Exception as error:
-            raise ModuleExecutionError('Error encountered while processing report:\n{}'.format(error))
+            raise ModuleExecutionError(
+                f'Error encountered while processing report:\n{error}'
+            )
 
 
     def get_unpacked_executables(self):
@@ -207,17 +209,23 @@ class Joe(ProcessingModule):
             tmpdir = tempdir()
             unpacked_files = []
             with ZipFile(unpackpe) as zf:
-                for name in zf.namelist():
-                    unpacked_files.append(zf.extract(name, tmpdir, pwd='infected'))
+                unpacked_files.extend(
+                    zf.extract(name, tmpdir, pwd='infected')
+                    for name in zf.namelist()
+                )
+
             self.register_files('unpacked_executable', unpacked_files)
         except Exception as err:
-            raise ModuleExecutionError('Error encountered while processing unpacked executables:\n{}'.format(err))
+            raise ModuleExecutionError(
+                f'Error encountered while processing unpacked executables:\n{err}'
+            )
 
 
     def extract_url(self, scheme, iocs, request):
-        match = re.match(r'(GET|POST) (\S+) .*Host: (\S+)', request, re.DOTALL)
-        if match:
-            iocs.add("{}://{}{}".format(scheme, match.group(3), match.group(2)))
+        if match := re.match(
+            r'(GET|POST) (\S+) .*Host: (\S+)', request, re.DOTALL
+        ):
+            iocs.add(f"{scheme}://{match[3]}{match[2]}")
 
 
     def extract_threatname(self, report):
@@ -250,13 +258,13 @@ class Joe(ProcessingModule):
             ]:
                 lines = ""
             elif prefix == "analysis.behavior.network.http.packet.item.header.line.item":
-                lines += "{}\n".format(value)
+                lines += f"{value}\n"
                 self.extract_url("http", iocs, lines)
             elif prefix in [
                 "analysis.behavior.network.https.packet.item.header.line.item",
                 "analysis.behavior.network.sslhttp.packet.item.header.line.item"
             ]:
-                lines += "{}\n".format(value)
+                lines += f"{value}\n"
                 self.extract_url("https", iocs, lines)
 
         for ioc in iocs:

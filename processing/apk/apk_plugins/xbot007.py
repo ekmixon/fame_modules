@@ -27,11 +27,13 @@ class Xbot007(APKPlugin):
                 php_end = string
 
         host = []
-        hostname = self.apk.get_android_resources().get_string(self.apk.get_package(), "domain")
-        if hostname:
+        if hostname := self.apk.get_android_resources().get_string(
+            self.apk.get_package(), "domain"
+        ):
             host.append(hostname[1])
-        hostname = self.apk.get_android_resources().get_string(self.apk.get_package(), "domain2")
-        if hostname:
+        if hostname := self.apk.get_android_resources().get_string(
+            self.apk.get_package(), "domain2"
+        ):
             host.append(hostname[1])
         for cls in self.vm_analysis.get_classes():
             # There has to be a better method to do THIS
@@ -41,20 +43,21 @@ class Xbot007(APKPlugin):
                 and len(cls.get_fields()) >= 2
                 and len(cls.get_fields()) < 10
             ):
-                for inst in cls.get_methods()[0].get_method().get_instructions():
-                    if inst.get_name() == "const-string":
-                        host.append(
-                            inst.get_output()
-                            .translate(REMOVE_CHARACTERS)
-                            .split(",")[-1]
-                            .strip("' ")
-                        )
+                host.extend(
+                    inst.get_output()
+                    .translate(REMOVE_CHARACTERS)
+                    .split(",")[-1]
+                    .strip("' ")
+                    for inst in cls.get_methods()[0]
+                    .get_method()
+                    .get_instructions()
+                    if inst.get_name() == "const-string"
+                )
+
         host = [x for x in host if not x.endswith(".apk")]
         host = [x for x in host if x]
-        c2 = [("http://" + h + "/" + php_end) for h in host]
+        c2 = [f"http://{h}/{php_end}" for h in host]
 
         module.add_ioc(c2, ["xbot007", "c2"])
 
         return json.dumps({"c2": c2}, indent=2)
-
-        return None

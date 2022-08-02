@@ -20,25 +20,27 @@ class URLDownload(ProcessingModule):
         self.add_ioc(target)
         response = requests.get(target, stream=True)
 
-        if response.status_code == 200:
-            tmpdir = tempdir()
-            try:
-                filename = parse_header(response.headers['content-disposition'])[1]['filename']
-            except KeyError:
-                filename = target.split('/')[-1]
+        if response.status_code != 200:
+            raise ModuleExecutionError(
+                f"Could not download file. Status: {response.status_code}"
+            )
 
-            if not filename:
-                filename = "no_filename"
+        tmpdir = tempdir()
+        try:
+            filename = parse_header(response.headers['content-disposition'])[1]['filename']
+        except KeyError:
+            filename = target.split('/')[-1]
 
-            filepath = os.path.join(tmpdir, filename)
+        if not filename:
+            filename = "no_filename"
 
-            with open(filepath, 'wb') as fd:
-                for chunk in response.iter_content(1024):
-                    fd.write(chunk)
+        filepath = os.path.join(tmpdir, filename)
 
-            self.add_extracted_file(filepath)
-            self.add_ioc(target, 'payload_delivery')
+        with open(filepath, 'wb') as fd:
+            for chunk in response.iter_content(1024):
+                fd.write(chunk)
 
-            return True
-        else:
-            raise ModuleExecutionError("Could not download file. Status: {}".format(response.status_code))
+        self.add_extracted_file(filepath)
+        self.add_ioc(target, 'payload_delivery')
+
+        return True

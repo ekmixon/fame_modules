@@ -66,14 +66,13 @@ class MemYara(VolatilityModule):
         # Create file containing rules
         tmpdir = tempdir()
         rules_path = os.path.join(tmpdir, "rules")
-        rules = open(rules_path, "w")
-        rules.write(self.rules)
-        rules.close()
-
+        with open(rules_path, "w") as rules:
+            rules.write(self.rules)
         # Build a VadYaraScan plugin instance
         vad_yara_scan = self.configure_plugin(
-            "windows.vadyarascan.VadYaraScan", yara_file="file://{}".format(rules_path)
+            "windows.vadyarascan.VadYaraScan", yara_file=f"file://{rules_path}"
         )
+
 
         rules = yarascan.YaraScan.process_yara_options(dict(vad_yara_scan.config))
         for task in pslist.PsList.list_processes(

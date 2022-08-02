@@ -32,16 +32,15 @@ class Mattermost(ReportingModule):
     ]
 
     def initialize(self):
-        if ReportingModule.initialize(self):
-            if not HAVE_REQUESTS:
-                raise ModuleInitializationError(self, "Missing dependency: requests")
-
-            if not HAVE_DEFANG:
-                raise ModuleInitializationError(self, "Missing dependency: defang")
-
-            return True
-        else:
+        if not ReportingModule.initialize(self):
             return False
+        if not HAVE_REQUESTS:
+            raise ModuleInitializationError(self, "Missing dependency: requests")
+
+        if not HAVE_DEFANG:
+            raise ModuleInitializationError(self, "Missing dependency: defang")
+
+        return True
 
     def done(self, analysis):
         string = "Just finished analysis on {0}\n".format(
@@ -49,31 +48,32 @@ class Mattermost(ReportingModule):
         )
 
         if analysis["modules"]:
-            string += "Selected Modules: {}\n".format(', '.join(analysis['modules']))
+            string += f"Selected Modules: {', '.join(analysis['modules'])}\n"
 
         if analysis["probable_names"]:
-            string += "Probable Names: {}\n".format(', '.join(analysis['probable_names']))
+            string += f"Probable Names: {', '.join(analysis['probable_names'])}\n"
 
         if analysis["extractions"]:
-            string += "Extractions: {}\n".format(', '.join([x['label'] for x in analysis['extractions']]))
+            string += f"Extractions: {', '.join([x['label'] for x in analysis['extractions']])}\n"
 
-        string += "<{}/analyses/{}|See analysis>\n".format(self.fame_base_url, analysis['_id'])
+
+        string += f"<{self.fame_base_url}/analyses/{analysis['_id']}|See analysis>\n"
 
         if analysis["iocs"]:
             string += "\n| Observable | Tags |\n"
             string += "|:-----------|:-----|\n"
 
             for ioc in analysis["iocs"]:
-                string += "|{}|{}|\n".format(defang(ioc['value']), ', '.join(ioc['tags']))
+                string += f"|{defang(ioc['value'])}|{', '.join(ioc['tags'])}|\n"
 
         string += "\n| Module | Status |\n"
         string += "|:-------|:------:|\n"
 
         for module in analysis["executed_modules"]:
-            string += "|{}| :ok_hand: executed |\n".format(module)
+            string += f"|{module}| :ok_hand: executed |\n"
 
         for module in analysis["canceled_modules"]:
-            string += "|{}| :rage2: canceled |\n".format(module)
+            string += f"|{module}| :rage2: canceled |\n"
 
         data = {"text": string}
         requests.post(self.url, data={"payload": json.dumps(data)})

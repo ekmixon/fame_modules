@@ -16,12 +16,7 @@ class EML(ProcessingModule):
     acts_on = "eml"
 
     def headers_string(self, header):
-        header_string = ""
-
-        for part in header:
-            header_string += "{}: {}\n".format(part[0], part[1])
-
-        return header_string
+        return "".join(f"{part[0]}: {part[1]}\n" for part in header)
 
     def register_headers(self, msg, outdir):
         # Create a temporary output dir
@@ -66,7 +61,7 @@ class EML(ProcessingModule):
                         # Use a generic bag-of-bits extension
                         ext = ".bin"
 
-                    filename = "part-{}{}".format(counter, ext)
+                    filename = f"part-{counter}{ext}"
                     counter += 1
 
                 filepath = os.path.join(outdir, filename)

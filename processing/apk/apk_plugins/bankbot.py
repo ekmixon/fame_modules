@@ -21,7 +21,7 @@ class BankBot(APKPlugin):
         invisible_log = list(self.vm_analysis.find_strings('INVISIBLE-LOG'))
         bank_clients = list(self.vm_analysis.find_strings("SEARCH BANK CLIENT'S"))
 
-        if len(invisible_log) == 0 or len(bank_clients) == 0:
+        if not invisible_log or not bank_clients:
             return None
 
         for invisible_cls, invisible_method in invisible_log[0].get_xref_from():

@@ -18,7 +18,7 @@ def pdftoimages(target, max_pages):
     # save pages to jpeg format
     for page in pages:
         counter = counter + 1
-        page.save('./output/{}_{}.jpeg'.format(re.sub('[^A-Za-z0-9]+', '_', target), counter))
+        page.save(f"./output/{re.sub('[^A-Za-z0-9]+', '_', target)}_{counter}.jpeg")
 
     if counter == 0:
         print('error: could not convert PDF to images')
@@ -26,33 +26,30 @@ def pdftoimages(target, max_pages):
 
 def libreofficeconversion(args):
     # convert to pdf using libreoffice
-    convert_pdf = 'libreoffice --headless --convert-to pdf "{}" 2> /dev/null'.format(os.path.basename(args.target))
+    convert_pdf = f'libreoffice --headless --convert-to pdf "{os.path.basename(args.target)}" 2> /dev/null'
+
     os.system(convert_pdf)
 
-    if os.path.exists(os.path.splitext(args.target)[0] + '.pdf'):
+    if os.path.exists(f'{os.path.splitext(args.target)[0]}.pdf'):
         return True
-    else:
-        print('error: libreoffice could not convert file to PDF')
-        return False
+    print('error: libreoffice could not convert file to PDF')
+    return False
 
 
 def main(args):
 
     # if office file, convert to pdf file with libreoffice library
-    if args.target_type == 'word' or args.target_type == 'excel' or args.target_type == 'powerpoint':
+    if args.target_type in ['word', 'excel', 'powerpoint']:
         if libreofficeconversion(args):
-            pdftoimages(os.path.splitext(args.target)[0] + '.pdf', args.max_pages)
-    # if pdf file
+            pdftoimages(f'{os.path.splitext(args.target)[0]}.pdf', args.max_pages)
     elif args.target_type == 'pdf':
         pdftoimages(args.target, args.max_pages)
-    # if another type
-    # try to convert to pdf with libreoffice
     else:
         print('warning: Unsupported target file')
         print('warning: libreoffice will try to convert the file to PDF')
         # convert to pdf file through libreoffice process
         if libreofficeconversion(args):
-            pdftoimages(os.path.splitext(args.target)[0] + '.pdf', args.max_pages)
+            pdftoimages(f'{os.path.splitext(args.target)[0]}.pdf', args.max_pages)
 
 
 # ------------ Viewing document Script  ------------ #

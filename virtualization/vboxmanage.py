@@ -77,7 +77,7 @@ class VBoxManage(VirtualizationModule):
                 return line[9:-1]
 
         raise ModuleExecutionError(
-            'Could not determine machine state for "{}"'.format(self.vm_label)
+            f'Could not determine machine state for "{self.vm_label}"'
         )
 
     def _vbox(self, *args):

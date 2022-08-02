@@ -14,9 +14,7 @@ class Marcher(APKPlugin):
             return None
 
         # Look for C2 URLs
-        result = dict()
-        result['c2_urls'] = self.look_for_c2_urls(module)
-
+        result = {'c2_urls': self.look_for_c2_urls(module)}
         # Look for a call with a string literal as argument
         for cls, method_call, offset in config_method.get_xref_from():
             pos = method_call.code.get_bc().off_to_pos(offset)
@@ -35,10 +33,7 @@ class Marcher(APKPlugin):
         return None
 
     def get_config_method(self):
-        # First, we are searching for the string "default_json"
-        strings = self.vm_analysis.find_strings('default_json')
-
-        if strings:
+        if strings := self.vm_analysis.find_strings('default_json'):
             for string in strings:
                 for cls, method in string.get_xref_from():
                     # Check for a specific prototype, we are looking for the method that sets 'default_json'
@@ -48,8 +43,6 @@ class Marcher(APKPlugin):
     def look_for_c2_urls(self, module):
         base_url = ""
         commands = []
-        urls = []
-
         for string in self.vm_analysis.get_strings():
             string = string.get_value()
             if string.startswith("http"):
@@ -57,7 +50,4 @@ class Marcher(APKPlugin):
             elif string.endswith(".php"):
                 commands.append(string)
 
-        for command in commands:
-            urls.append(base_url + command)
-
-        return urls
+        return [base_url + command for command in commands]

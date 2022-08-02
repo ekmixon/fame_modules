@@ -52,6 +52,6 @@ class OfficePassword(ProcessingModule):
                 except:
                     pass
             else:
-                self.log('error', 'Could not extract {} (password not known)'.format(target))
+                self.log('error', f'Could not extract {target} (password not known)')
 
         return True

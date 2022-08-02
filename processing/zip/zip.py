@@ -49,9 +49,9 @@ class LegacyZip(ProcessingModule):
             )
         else:
             should_extract = len(namelist) <= self.maximum_extracted_files
-            should_analyze = len(namelist) <= self.maximum_automatic_analyses
-
             if should_extract:
+                should_analyze = len(namelist) <= self.maximum_automatic_analyses
+
                 for name in namelist:
                     try:
                         filepath = zf.extract(name, tmpdir)
@@ -72,21 +72,20 @@ class LegacyZip(ProcessingModule):
                                 pass
                         else:
                             self.results["warnings"].append(
-                                "Could not extract {} (password not known)".format(name)
+                                f"Could not extract {name} (password not known)"
                             )
+
 
                 if not should_analyze:
                     self.results["warnings"].append(
-                        "Archive contains more than {} files ({}), so no analysis was automatically created.".format(
-                            self.maximum_automatic_analyses, len(namelist)
-                        )
+                        f"Archive contains more than {self.maximum_automatic_analyses} files ({len(namelist)}), so no analysis was automatically created."
                     )
+
             else:
                 self.results["warnings"].append(
-                    "Archive contains more than {} files ({}), so they were not extracted.".format(
-                        self.maximum_extracted_files, len(namelist)
-                    )
+                    f"Archive contains more than {self.maximum_extracted_files} files ({len(namelist)}), so they were not extracted."
                 )
+
 
         if self.results["warnings"]:
             self.results["files"] = namelist

@@ -102,8 +102,7 @@ class SafeBrowsingLookupAPI(ThreatIntelligenceModule):
 
                     if 'threatEntryMetadata' in match:
                         for metadata in match['threatEntryMetadata']['entries']:
-                            tags.add(
-                                '{}:{}'.format(metadata['key'], metadata['value']))
+                            tags.add(f"{metadata['key']}:{metadata['value']}")
 
                 if 'all_platforms' not in platforms:
                     tags.update(platforms)
@@ -113,7 +112,7 @@ class SafeBrowsingLookupAPI(ThreatIntelligenceModule):
     def _google_safe_browsing_request(self, method, body):
         headers = {'Content-Type': 'application/json'}
         # format url : https://developers.google.com/safe-browsing/v4/lookup-api#http-post-request
-        url = '{}/{}?key={}'.format(self.url_safebrowsing, method, self.api_key)
+        url = f'{self.url_safebrowsing}/{method}?key={self.api_key}'
         r = requests.post(url, json=body, headers=headers)
 
         r.raise_for_status()
@@ -177,7 +176,5 @@ class SafeBrowsingUpdateAPI(ThreatIntelligenceModule):
     def _gglsbl_request(self, encoded_ioc):
         headers = {'Content-Type': 'application/json'}
         # url: ip:5000/ggslbl/v1/lookup/'url_encoded'
-        url = '{}{}'.format(self.gglsbl_url, encoded_ioc)
-        r = requests.get(url, headers=headers)
-
-        return r
+        url = f'{self.gglsbl_url}{encoded_ioc}'
+        return requests.get(url, headers=headers)

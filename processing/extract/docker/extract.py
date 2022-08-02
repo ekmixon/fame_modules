@@ -14,7 +14,7 @@ except ImportError:
 # Arg4 : Maximum automatic analyzis
 
 if len(sys.argv) != 5:
-   raise Exception("Incorrect number of arguments ({})".format(len(sys.argv)))
+    raise Exception(f"Incorrect number of arguments ({len(sys.argv)})")
 
 target = sys.argv[2]
 maximum_extracted_files = int(sys.argv[3])
@@ -25,13 +25,10 @@ entries = []
 
 if os.path.exists("/data/passwords_candidates.txt"):
     with open("/data/passwords_candidates.txt", "r") as f:
-        for line in f:
-            password_candidates.append(line.strip())
+        password_candidates.extend(line.strip() for line in f)
 try:
     with libarchive.public.file_reader(target, passphrases=password_candidates) as ar:
-        for entry in ar:
-            if entry.filetype.IFREG:
-                entries.append(entry.pathname)
+        entries.extend(entry.pathname for entry in ar if entry.filetype.IFREG)
 except libarchive.exception.ArchiveError:
     print("Cannot read archive content")
 
@@ -54,14 +51,17 @@ if should_extract:
                     with open(abspath, "wb") as o:
                         for block in entry.get_blocks():
                             o.write(block)
-                    print(("should_analyze: {}".format(abspath)))
+                    print(f"should_analyze: {abspath}")
     except libarchive.exception.ArchiveError:
         print("warning: Unable to extract the archive (password not known)")
     except ValueError:
         print("warning: Unable to extract the archive (password not known ?)")
     if not should_analyze:
-        print(("warning: Archive contains more than {} files ({}), so no analysis was automatically created.".format(
-                maximum_automatic_analyses, len(entries))))
+        print(
+            f"warning: Archive contains more than {maximum_automatic_analyses} files ({len(entries)}), so no analysis was automatically created."
+        )
+
 else:
-    print(("warning: Archive contains more than {} files ({}), so they were not extracted.".format(
-            maximum_extracted_files, len(entries))))
+    print(
+        f"warning: Archive contains more than {maximum_extracted_files} files ({len(entries)}), so they were not extracted."
+    )

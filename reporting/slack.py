@@ -32,16 +32,15 @@ class Slack(ReportingModule):
     ]
 
     def initialize(self):
-        if ReportingModule.initialize(self):
-            if not HAVE_REQUESTS:
-                raise ModuleInitializationError(self, "Missing dependency: requests")
-
-            if not HAVE_DEFANG:
-                raise ModuleInitializationError(self, "Missing dependency: defang")
-
-            return True
-        else:
+        if not ReportingModule.initialize(self):
             return False
+        if not HAVE_REQUESTS:
+            raise ModuleInitializationError(self, "Missing dependency: requests")
+
+        if not HAVE_DEFANG:
+            raise ModuleInitializationError(self, "Missing dependency: defang")
+
+        return True
 
     def done(self, analysis):
 
@@ -50,15 +49,16 @@ class Slack(ReportingModule):
         )
 
         if analysis["modules"]:
-            string += "Target: {}\n".format(', '.join(analysis['modules']))
+            string += f"Target: {', '.join(analysis['modules'])}\n"
 
         if analysis["extractions"]:
-            string += "Extractions: {}\n".format(', '.join([x['label'] for x in analysis['extractions']]))
+            string += f"Extractions: {', '.join([x['label'] for x in analysis['extractions']])}\n"
+
 
         if analysis["probable_names"]:
-            string += "Probable Names: {}\n".format(', '.join(analysis['probable_names']))
+            string += f"Probable Names: {', '.join(analysis['probable_names'])}\n"
 
-        string += "<{}/analyses/{}|See analysis>".format(self.fame_base_url, analysis['_id'])
+        string += f"<{self.fame_base_url}/analyses/{analysis['_id']}|See analysis>"
 
         data = {"text": string}
         requests.post(self.url, data={"payload": json.dumps(data)})

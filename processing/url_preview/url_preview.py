@@ -75,7 +75,7 @@ class UrlPreview(ProcessingModule):
             return False
 
     def preview(self, url):
-        args = "node {} {} {}".format("/script.js", url, self.network_idle_timeout)
+        args = f"node /script.js {url} {self.network_idle_timeout}"
 
         # start the right docker
         output = docker_client.containers.run(
@@ -118,7 +118,7 @@ class UrlPreview(ProcessingModule):
         # add http protocol if missing
         # requests lib needs it
         if filetype == "url" and not target.startswith("http"):
-            target = "http://{}".format(target)
+            target = f"http://{target}"
 
         if filetype == "url":
             self.add_ioc(target)

@@ -53,8 +53,11 @@ class APKVerification(ProcessingModule):
         # Verify the signature
         p = Popen(["jarsigner", "-verify", file], stdout=PIPE)
         out = p.communicate()[0]
-        self.results["{}_output".format(key)] = out
-        self.results["{}_status".format(key)] = ((p.returncode == 0) and (out.startswith('jar verified.')))
+        self.results[f"{key}_output"] = out
+        self.results[f"{key}_status"] = (p.returncode == 0) and (
+            out.startswith('jar verified.')
+        )
+
 
         # Extract the certificate
         z = ZipFile(file)
@@ -66,7 +69,7 @@ class APKVerification(ProcessingModule):
 
         # Extract certificate details
         p = Popen(["keytool", "-printcert", "-file", cert], stdout=PIPE)
-        self.results["{}_certificate".format(key)] = p.communicate()[0]
+        self.results[f"{key}_certificate"] = p.communicate()[0]
 
     def download_reference_apk(self):
         api = GooglePlayAPI(self.android_id)
@@ -86,7 +89,7 @@ class APKVerification(ProcessingModule):
 
     def each(self, target):
         self.tmpdir = tempdir()
-        self.results = dict()
+        self.results = {}
 
         apk, vm, vm_analysis = AnalyzeAPK(target)
         self.results['package'] = apk.get_package()

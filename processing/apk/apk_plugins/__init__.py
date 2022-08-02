@@ -3,7 +3,7 @@ import glob
 from zipfile import ZipFile
 
 
-modules = glob.glob(os.path.dirname(__file__) + "/*.py")
+modules = glob.glob(f"{os.path.dirname(__file__)}/*.py")
 __all__ = [os.path.basename(f)[:-3] for f in modules] + ['APKPlugin']
 
 
@@ -38,14 +38,10 @@ class APKPlugin(object):
         self.apk = apk
         self.vm = vm
         self.vm_analysis = vm_analysis
-        if self.apk:
-            self.zipfile = ZipFile(target)
-        else:
-            self.zipfile = None
+        self.zipfile = ZipFile(target) if self.apk else None
 
     def apply(self, module):
-        extraction = self.run(module)
-        if extraction:
+        if extraction := self.run(module):
             module.add_tag(self.name)
             module.add_probable_name(self.probable_name)
             module.add_extraction(self.extraction, extraction)

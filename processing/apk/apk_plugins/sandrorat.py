@@ -19,10 +19,10 @@ class SandroRAT(APKPlugin):
         port = []
         for cls in self.vm_analysis.get_classes():
             if (
-                len(cls.get_fields()) == 3 and
-                set(['a', 'b', 'c']) == set([x.name for x in cls.get_fields()]) and
-                len(cls.get_methods()) == 1 and
-                cls.get_methods()[0].name.endswith('<clinit>')
+                len(cls.get_fields()) == 3
+                and {'a', 'b', 'c'} == {x.name for x in cls.get_fields()}
+                and len(cls.get_methods()) == 1
+                and cls.get_methods()[0].name.endswith('<clinit>')
             ):
                 clinit = cls.get_methods()[0]
 
@@ -34,7 +34,7 @@ class SandroRAT(APKPlugin):
         servers = []
         for i, server in enumerate(c2):
             if len(port) > i:
-                servers.append(server + ':' + str(port[i]))
+                servers.append(f'{server}:{str(port[i])}')
             else:
                 servers.append(server)
 

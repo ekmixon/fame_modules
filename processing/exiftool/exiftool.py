@@ -29,10 +29,7 @@ File Permissions""",
 
         # Properly format exclusion list
         attributes = self.exclude.splitlines()
-        self.exclude = []
-
-        for attribute in attributes:
-            self.exclude.append(attribute.strip())
+        self.exclude = [attribute.strip() for attribute in attributes]
 
         return True
 

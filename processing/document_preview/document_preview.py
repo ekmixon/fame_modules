@@ -51,15 +51,15 @@ class DocumentPreview(ProcessingModule):
             if filename.endswith('.jpeg'):
                 # extract page number from filename
                 number = filename.split('_')[-1].split('.')[0]
-                self.add_support_file('page_#{}'.format(number), os.path.join(directory, filename))
+                self.add_support_file(f'page_#{number}', os.path.join(directory, filename))
                 extracted_images = True
 
         return extracted_images
 
     def preview(self, target, target_type):
 
-        args = "--target \"{}\" --target_type {} --max_pages {}".format(
-            os.path.basename(target), target_type, self.max_pages)
+        args = f'--target \"{os.path.basename(target)}\" --target_type {target_type} --max_pages {self.max_pages}'
+
 
         # start the right docker
         return docker_client.containers.run(

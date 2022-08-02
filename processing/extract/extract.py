@@ -55,7 +55,8 @@ class Extract(ProcessingModule):
         self.results["files"] = namelist
 
     def extract(self, file):
-        args = '"{}" {} {}'.format(file, self.maximum_extracted_files, self.maximum_automatic_analyses)
+        args = f'"{file}" {self.maximum_extracted_files} {self.maximum_automatic_analyses}'
+
 
         # start the right docker
         output = docker_client.containers.run(

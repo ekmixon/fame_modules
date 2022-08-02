@@ -31,21 +31,16 @@ class AndroRAT(APKPlugin):
                             c2Found = False
                         if string == 'ip':
                             c2Found = True
-                        if string == 'port':
+                        elif string == 'port':
                             portFound = True
-                    if inst.get_name() == 'const/16':
-                        if portFound:
-                            string = inst.get_output().split(',')[-1].strip(" '")
-                            port = string
+                    if inst.get_name() == 'const/16' and portFound:
+                        string = inst.get_output().split(',')[-1].strip(" '")
+                        port = string
                     if c2 and port:
                         break
 
         server = ""
-        if port:
-            server = "{0}:{1}".format(c2, str(port))
-        else:
-            server = c2
-
+        server = "{0}:{1}".format(c2, str(port)) if port else c2
         module.add_ioc(server, ['androdat', 'c2'])
 
         return json.dumps({'c2': server}, indent=2)

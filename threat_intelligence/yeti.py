@@ -45,9 +45,6 @@ class Yeti(ThreatIntelligenceModule):
         return True
 
     def ioc_lookup(self, ioc):
-        tags = []
-        indicators = []
-
         query = {
             "observables": [ioc]
         }
@@ -55,17 +52,20 @@ class Yeti(ThreatIntelligenceModule):
         r = self._yeti_request('analysis/match', query)
 
         results = r.json()
-        for result in results['known']:
-            if result['value'] == ioc:
-                tags = [tag['name'] for tag in result['tags']]
-                break
+        tags = next(
+            (
+                [tag['name'] for tag in result['tags']]
+                for result in results['known']
+                if result['value'] == ioc
+            ),
+            [],
+        )
 
-        for result in results['matches']:
-            if result['observable'] == ioc:
-                indicators.append({
-                    'name': result['name'],
-                    'description': result['description']
-                })
+        indicators = [
+            {'name': result['name'], 'description': result['description']}
+            for result in results['matches']
+            if result['observable'] == ioc
+        ]
 
         return tags, indicators
 
@@ -83,7 +83,7 @@ class Yeti(ThreatIntelligenceModule):
     def _yeti_request(self, url, data):
         headers = {'accept': 'application/json'}
         if self.api_key:
-            headers.update({'X-Api-Key': self.api_key})
+            headers['X-Api-Key'] = self.api_key
 
         if self.user == "":
             r = requests.post(self.url + url,

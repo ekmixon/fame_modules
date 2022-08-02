@@ -74,11 +74,9 @@ class EmailHeader(ProcessingModule):
         self.spf_headers = list_config(self.spf_headers)
 
     def delay_to_string(self, delay):
-        string = ""
-        if delay.minutes:
-            string = "{} min ".format(delay.minutes)
+        string = f"{delay.minutes} min " if delay.minutes else ""
         if delay.seconds:
-            string = string + "{} sec".format(delay.seconds)
+            string += f"{delay.seconds} sec"
 
         return string
 
@@ -167,8 +165,7 @@ class EmailHeader(ProcessingModule):
 
         for header, value in headers:
             if header.lower() in headers_to_check:
-                match = regex.search(value.lower())
-                if match:
+                if match := regex.search(value.lower()):
                     status = match.group(1)
                     domain = match.group(2)
 

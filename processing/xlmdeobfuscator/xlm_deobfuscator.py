@@ -24,7 +24,7 @@ class XLMDeobfuscator(ProcessingModule):
 
     def run_xlmd(self, target):
 
-        args = "-n --file '/data/{}' --export-json /data/output/results.json".format(target)
+        args = f"-n --file '/data/{target}' --export-json /data/output/results.json"
 
         # start the right docker
         return docker_client.containers.run(

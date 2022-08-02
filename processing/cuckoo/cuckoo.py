@@ -80,7 +80,7 @@ class Cuckoo(ProcessingModule):
 
     def each_with_type(self, target, file_type):
         # Set root URLs
-        self.results = dict()
+        self.results = {}
 
         options = self.define_options()
 
@@ -103,20 +103,19 @@ class Cuckoo(ProcessingModule):
         self.get_pcap()
 
         # Add report URL to results
-        self.results['URL'] = urljoin(self.web_endpoint, "/analysis/{}/summary/".format(self.task_id))
+        self.results['URL'] = urljoin(
+            self.web_endpoint, f"/analysis/{self.task_id}/summary/"
+        )
+
 
         return True
 
     def define_options(self):
-        if self.allow_internet_access:
-            route = "internet"
-        else:
-            route = "drop"
-
+        route = "internet" if self.allow_internet_access else "drop"
         return {
             'timeout': self.analysis_time,
             'enforce_timeout': True,
-            'options': 'route={}'.format(route)
+            'options': f'route={route}',
         }
 
     def submit_file(self, filepath, options):
@@ -161,12 +160,12 @@ class Cuckoo(ProcessingModule):
     def extract_info(self, report):
         parser = ijson.parse(report)
         self.results['signatures'] = []
-        signature = dict()
+        signature = {}
 
         for prefix, event, value in parser:
             if prefix == "signatures.item" and event == "end_map":
                 self.results['signatures'].append(signature)
-                signature = dict()
+                signature = {}
             elif prefix == "signatures.item.name":
                 signature['name'] = value
                 self.add_tag(value)
@@ -198,10 +197,8 @@ class Cuckoo(ProcessingModule):
         else:
             tmpdir = tempdir()
             filename = os.path.join(tmpdir, 'cuckoo_response')
-            f = open(filename, "wb")
+            with open(filename, "wb") as f:
+                for chunk in response.iter_content(1024):
+                    f.write(chunk)
 
-            for chunk in response.iter_content(1024):
-                f.write(chunk)
-
-            f.close()
             self.register_files(type, filename)

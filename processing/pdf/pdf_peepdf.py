@@ -23,11 +23,11 @@ def file_sha256(filepath):
 
     with open(filepath, 'rb') as f:
         while True:
-            data = f.read(1000000)
-            if not data:
-                break
-            sha256.update(data)
+            if data := f.read(1000000):
+                sha256.update(data)
 
+            else:
+                break
     return sha256.hexdigest()
 
 
@@ -99,11 +99,12 @@ class Peepdf(ProcessingModule):
         self.extract_file(filename.value, obj.object.decodedStream)
 
     def extract_link(self, obj):
-        if "/URI" in obj.elements:
-            if isinstance(obj.elements['/URI'], peepdf.PDFCore.PDFString):
-                url = obj.elements['/URI'].value
-                self.add_ioc(url)
-                self.results['urls'].add(url)
+        if "/URI" in obj.elements and isinstance(
+            obj.elements['/URI'], peepdf.PDFCore.PDFString
+        ):
+            url = obj.elements['/URI'].value
+            self.add_ioc(url)
+            self.results['urls'].add(url)
 
     def extract_javascript(self, pdf, obj, version):
         if "/JS" in obj.elements:
@@ -117,7 +118,7 @@ class Peepdf(ProcessingModule):
             elif isinstance(ref, peepdf.PDFCore.PDFString):
                 js = ref.value
 
-            self.results['javascript'] += "{}\n\n".format(js_beautify_string(js))
+            self.results['javascript'] += f"{js_beautify_string(js)}\n\n"
 
     def walk_objects(self, pdf, obj, version):
         if isinstance(obj, peepdf.PDFCore.PDFIndirectObject):
@@ -197,7 +198,7 @@ class Peepdf(ProcessingModule):
         )
 
         if result:
-            raise ModuleExecutionError('error during PDF parsing: {}'.format(result))
+            raise ModuleExecutionError(f'error during PDF parsing: {result}')
 
         for version in range(pdf.updates + 1):
             for obj in list(pdf.body[version].objects.values()):
@@ -210,11 +211,7 @@ class Peepdf(ProcessingModule):
 
         self.clean_up()
 
-        clean = True
-        for element_type in self.results:
-            if self.results[element_type]:
-                clean = False
-
+        clean = not any(self.results.values())
         self.results['clean'] = clean
 
         return True

@@ -44,5 +44,5 @@ class VirusTotalDownload(PreloadingModule):
             self.add_preloaded_file(fd=BytesIO(response.raw.read()))
         else:
             raise ModuleExecutionError(
-                "Could not download file. Status: {}".format(response.status_code)
+                f"Could not download file. Status: {response.status_code}"
             )

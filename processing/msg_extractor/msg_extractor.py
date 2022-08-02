@@ -33,8 +33,7 @@ class MSG(ProcessingModule):
         for attachment in attachments:
             if attachment.type == "msg":
                 tmp = attachment.save(customPath=outdir, useFileName=True)
-                for file in os.listdir(tmp):
-                    paths.append("%s%s%s" % (tmp, os.path.sep, file))
+                paths.extend(f"{tmp}{os.path.sep}{file}" for file in os.listdir(tmp))
             else:
                 paths.append(attachment.save(customPath=outdir))
 
@@ -59,21 +58,15 @@ class MSG(ProcessingModule):
             self.add_extracted_file(path)
 
     def each(self, target):
-        mail = extract_msg.Message(target)
-
-        if mail:
+        if mail := extract_msg.Message(target):
             outdir = tempdir()
 
-            # extract header
-            header_string = self.extract_header(mail)
-            if header_string:
+            if header_string := self.extract_header(mail):
                 self.register_header(header_string, outdir)
             else:
                 self.log('error', 'could not extract email headers')
 
-            # extract attachments
-            attachments_path = self.extract_attachments(mail, outdir)
-            if attachments_path:
+            if attachments_path := self.extract_attachments(mail, outdir):
                 self.add_attachments(attachments_path)
             else:
                 self.log('debug', 'no attachment found')

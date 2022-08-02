@@ -38,7 +38,10 @@ class LibvirtVirtualization(VirtualizationModule):
             if self.vm.hasCurrentSnapshot():
                 snapshot = self.vm.snapshotCurrent()
             else:
-                raise ModuleExecutionError('Machine "{}" does not have a current snapshot. Please specify a snapshot name in the configuration.'.format(self.vm_label))
+                raise ModuleExecutionError(
+                    f'Machine "{self.vm_label}" does not have a current snapshot. Please specify a snapshot name in the configuration.'
+                )
+
         else:
             snapshot = self.vm.snapshotLookupByName(self.snapshot)
 

@@ -65,9 +65,9 @@ Best regards""",
         return True
 
     def submit(self, file):
-        archive_name = "sample_{}.zip".format(uuid4())
+        archive_name = f"sample_{uuid4()}.zip"
         archive_file = path.join(fame_config.temp_path, archive_name)
-        subprocess.call(["7z", "a", "-tzip", "-p{}".format(self.password), archive_file, file])
+        subprocess.call(["7z", "a", "-tzip", f"-p{self.password}", archive_file, file])
 
         server = EmailServer()
         msg = server.new_message(self.mail_subject, self.mail_template.format(self.password))

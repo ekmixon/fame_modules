@@ -383,7 +383,7 @@ class CutTheCrap(IsolatedProcessingModule):
         extensions = {"javascript": "js", "vbscript": "vbs"}
 
         if file_type in extensions:
-            dst = "{}.{}".format(target, extensions[file_type])
+            dst = f"{target}.{extensions[file_type]}"
             move(target, dst)
             target = dst
 
@@ -408,7 +408,7 @@ class CutTheCrap(IsolatedProcessingModule):
                     if dll_name in ["scrrun.dll", "msado15.dll", "VBE7.DLL", "urlmon.dll", "OLEAUT32.dll"]:
                         break
                 else:
-                    self.log("debug", "ignoring message because of stack: {}".format(message))
+                    self.log("debug", f"ignoring message because of stack: {message}")
                     return
 
             handlers[message["payload"]["api"]](message["payload"])
@@ -451,14 +451,15 @@ class CutTheCrap(IsolatedProcessingModule):
         self.process_created = threading.Event()
 
         self.paths = {
-            "word": "{}\\{}".format(self.office_path, "WINWORD.EXE"),
-            "rtf": "{}\\{}".format(self.office_path, "WINWORD.EXE"),
-            "html": "{}\\{}".format(self.office_path, "WINWORD.EXE"),
-            "excel": "{}\\{}".format(self.office_path, "EXCEL.EXE"),
-            "powerpoint": "{}\\{}".format(self.office_path, "POWERPOINT.EXE"),
+            "word": f"{self.office_path}\\WINWORD.EXE",
+            "rtf": f"{self.office_path}\\WINWORD.EXE",
+            "html": f"{self.office_path}\\WINWORD.EXE",
+            "excel": f"{self.office_path}\\EXCEL.EXE",
+            "powerpoint": f"{self.office_path}\\POWERPOINT.EXE",
             "javascript": "C:\\Windows\\system32\\wscript.exe",
             "vbscript": "C:\\Windows\\system32\\wscript.exe",
         }
+
 
         self.files = set()
         self.results = {"actions": []}
@@ -485,7 +486,7 @@ class CutTheCrap(IsolatedProcessingModule):
         try:
             target = self.set_extension(target, file_type)
             executable = self.paths[file_type]
-            cmdline = "\"{}\" \"{}\"".format(executable, target)
+            cmdline = f'\"{executable}\" \"{target}\"'
 
             # Start the process in a paused state
             process = win32process.CreateProcess(
@@ -525,7 +526,7 @@ class CutTheCrap(IsolatedProcessingModule):
         for i, dropped_file in enumerate(self.files):
             if self.add_to_support_files:
                 basename = dropped_file.split("\\")[-1].split("/")[-1]
-                self.add_support_file("{}_{}".format(i, basename), dropped_file)
+                self.add_support_file(f"{i}_{basename}", dropped_file)
             if self.add_to_extracted_files:
                 self.add_extracted_file(dropped_file)
         del self.files
@@ -556,4 +557,4 @@ class CutTheCrap(IsolatedProcessingModule):
         self.record("WMI Query", params, comment)
 
     def record_wmi_object(self, obj, method, comment):
-        self.record("WMI Call", "{}->{}".format(obj, method), comment)
+        self.record("WMI Call", f"{obj}->{method}", comment)

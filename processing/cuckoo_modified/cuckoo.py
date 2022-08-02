@@ -89,7 +89,7 @@ class CuckooModified(ProcessingModule):
         self.base_url = 'http://{0}:{1}'.format(self.host, self.api_port)
         self.web_base_url = 'http://{0}:{1}'.format(self.host, self.web_port)
 
-        self.results = dict()
+        self.results = {}
 
         options = self.define_options()
 
@@ -115,16 +115,12 @@ class CuckooModified(ProcessingModule):
         self.get_memory_dump()
 
         # Add report URL to results
-        self.results['URL'] = "{}/analysis/{}/".format(self.web_base_url, self.task_id)
+        self.results['URL'] = f"{self.web_base_url}/analysis/{self.task_id}/"
 
         return True
 
     def define_options(self):
-        if self.allow_internet_access:
-            tag = "internet_access"
-        else:
-            tag = "no_internet"
-
+        tag = "internet_access" if self.allow_internet_access else "no_internet"
         return {
             'timeout': self.analysis_time,
             'enforce_timeout': True,
@@ -132,14 +128,14 @@ class CuckooModified(ProcessingModule):
         }
 
     def submit_file(self, filepath, options):
-        url = self.base_url + '/tasks/create/file'
+        url = f'{self.base_url}/tasks/create/file'
         fp = open(filepath, 'rb')
 
         response = requests.post(url, files={'file': fp}, data=options)
         self.task_id = response.json()['task_ids'][0]
 
     def submit_url(self, target_url, options):
-        url = self.base_url + '/tasks/create/url'
+        url = f'{self.base_url}/tasks/create/url'
         options['url'] = target_url
         response = requests.post(url, data=options)
         self.task_id = response.json()['task_id']
@@ -162,7 +158,7 @@ class CuckooModified(ProcessingModule):
             raise ModuleExecutionError('could not get report before timeout.')
 
     def store_report_summary(self):
-        url = self.web_base_url + '/filereport/{}/htmlsummary/'.format(self.task_id)
+        url = self.web_base_url + f'/filereport/{self.task_id}/htmlsummary/'
         tmpdir = tempdir()
         filepath = urlretrieve(url, os.path.join(tmpdir, 'cuckoo_report.html'))[0]
         self.add_support_file('Report', filepath)
@@ -179,18 +175,19 @@ class CuckooModified(ProcessingModule):
     def extract_info(self, report):
         # First, build an array with every antivirus information that might be
         # of interrest
-        av_prefixes = []
-        for av in self._analysis._file['antivirus']:
-            av_prefixes.append('data.signatures.item.data.item.{}'.format(av))
+        av_prefixes = [
+            f'data.signatures.item.data.item.{av}'
+            for av in self._analysis._file['antivirus']
+        ]
 
         parser = ijson.parse(report)
         self.results['signatures'] = []
-        signature = dict()
+        signature = {}
 
         for prefix, event, value in parser:
             if prefix == "data.signatures.item" and event == "end_map":
                 self.results['signatures'].append(signature)
-                signature = dict()
+                signature = {}
             elif prefix == "data.signatures.item.name":
                 signature['name'] = value
                 self.add_tag(value)
